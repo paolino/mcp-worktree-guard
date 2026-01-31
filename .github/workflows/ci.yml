@@ -29,3 +29,6 @@ jobs:
 
       - name: Lint
         run: nix develop --quiet --command bash -c "npm ci --quiet && ./node_modules/.bin/tsc --noEmit"
+
+      - name: Build docs
+        run: nix develop --quiet --command just build-docs
