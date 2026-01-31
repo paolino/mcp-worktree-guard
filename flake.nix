@@ -43,36 +43,40 @@
           };
         };
 
-        unit-tests = pkgs.buildNpmPackage {
-          pname = "mcp-worktree-guard-tests";
+        # Build artifact with compiled tests
+        testBuild = pkgs.buildNpmPackage {
+          pname = "mcp-worktree-guard-test-build";
           version = self.shortRev or self.dirtyShortRev or "dev";
 
           src = ./.;
 
           npmDepsHash = "sha256-RflwpyQsELIODwGDBHSBFhDc855Zmur/12gTMGb7c+M=";
 
-          nativeBuildInputs = [ pkgs.git ];
-
           buildPhase = ''
             npm run build
           '';
 
-          # Configure git for tests
-          checkPhase = ''
-            export HOME=$TMPDIR
-            git config --global user.email "test@test.com"
-            git config --global user.name "Test"
-            git config --global init.defaultBranch main
-            npm test
-          '';
-
-          doCheck = true;
-
           installPhase = ''
-            mkdir -p $out
-            echo "Tests passed" > $out/result
+            mkdir -p $out/lib
+            cp -r dist $out/lib/
+            cp -r node_modules $out/lib/
+            cp package.json $out/lib/
           '';
         };
+
+        # Runnable test script
+        unit-tests = pkgs.writeShellScriptBin "unit-tests" ''
+          set -euo pipefail
+          export PATH="${pkgs.git}/bin:$PATH"
+          export HOME=$(mktemp -d)
+
+          ${pkgs.git}/bin/git config --global user.email "test@test.com"
+          ${pkgs.git}/bin/git config --global user.name "Test"
+          ${pkgs.git}/bin/git config --global init.defaultBranch main
+
+          cd ${testBuild}/lib
+          ${pkgs.nodejs}/bin/node --test dist/test/*.test.js
+        '';
 
       in {
         packages = {
