@@ -55,3 +55,15 @@ CI:
     just build
     just test
     just lint
+
+# Serve documentation locally
+serve-docs:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdocs serve
+
+# Build documentation
+build-docs:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdocs build

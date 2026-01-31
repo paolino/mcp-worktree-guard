@@ -92,6 +92,8 @@
             just
             nodePackages.typescript
             nodePackages.prettier
+            python312Packages.mkdocs-material
+            python312Packages.mkdocs
           ];
         };
       });
