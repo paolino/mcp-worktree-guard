@@ -17,7 +17,7 @@
 
           src = ./.;
 
-          npmDepsHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+          npmDepsHash = "sha256-RflwpyQsELIODwGDBHSBFhDc855Zmur/12gTMGb7c+M=";
 
           buildPhase = ''
             npm run build
@@ -43,15 +43,48 @@
           };
         };
 
+        unit-tests = pkgs.buildNpmPackage {
+          pname = "mcp-worktree-guard-tests";
+          version = self.shortRev or self.dirtyShortRev or "dev";
+
+          src = ./.;
+
+          npmDepsHash = "sha256-RflwpyQsELIODwGDBHSBFhDc855Zmur/12gTMGb7c+M=";
+
+          nativeBuildInputs = [ pkgs.git ];
+
+          buildPhase = ''
+            npm run build
+          '';
+
+          # Configure git for tests
+          checkPhase = ''
+            export HOME=$TMPDIR
+            git config --global user.email "test@test.com"
+            git config --global user.name "Test"
+            git config --global init.defaultBranch main
+            npm test
+          '';
+
+          doCheck = true;
+
+          installPhase = ''
+            mkdir -p $out
+            echo "Tests passed" > $out/result
+          '';
+        };
+
       in {
         packages = {
           default = package;
           mcp-worktree-guard = package;
+          unit-tests = unit-tests;
         };
 
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             nodejs
+            git
             just
             nodePackages.typescript
             nodePackages.prettier
