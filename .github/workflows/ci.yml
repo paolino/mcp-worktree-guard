@@ -17,10 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v30
+      - uses: paolino/dev-assets/setup-nix@v0.0.1
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
+          cachix-auth-token: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - name: Build
         run: nix build .#default
@@ -29,4 +28,4 @@ jobs:
         run: nix build .#unit-tests
 
       - name: Lint
-        run: nix develop --command npx tsc --noEmit
+        run: nix develop --command bash -c "npm ci && ./node_modules/.bin/tsc --noEmit"
