@@ -22,10 +22,10 @@ jobs:
           cachix-auth-token: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - name: Build
-        run: nix build .#default
+        run: nix build .#default --quiet
 
       - name: Test
-        run: nix build .#unit-tests
+        run: nix build .#unit-tests --quiet
 
       - name: Lint
-        run: nix develop --command bash -c "npm ci && ./node_modules/.bin/tsc --noEmit"
+        run: nix develop --quiet --command bash -c "npm ci --quiet && ./node_modules/.bin/tsc --noEmit"
