@@ -2,28 +2,56 @@
 
 MCP server enforcing git worktree-per-branch workflow.
 
-## Overview
+## Why?
 
-This MCP server prevents code changes in the main worktree, ensuring all development happens in dedicated worktrees. This workflow:
+When working with AI coding assistants, it's easy to accidentally make changes in the wrong branch or directly on main. This MCP server:
 
-- Keeps the main repo always on `main` branch
-- Enables parallel development by multiple agents
-- Prevents accidental commits to wrong branches
-- Makes it easy to switch between tasks
+- Blocks file modifications in the main worktree
+- Encourages creating dedicated worktrees for each task
+- Enables parallel development without branch conflicts
 
-## Quick Start
+## Installation
 
-Configure in your MCP settings:
+### Claude Code
+
+Add to `~/.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "worktree-guard": {
+      "command": "npx",
+      "args": ["-y", "mcp-worktree-guard"]
+    }
+  }
+}
+```
+
+### From Source
+
+```bash
+git clone https://github.com/paolino/mcp-worktree-guard
+cd mcp-worktree-guard
+npm install && npm run build
+```
+
+Then add to `~/.claude/settings.json`:
 
 ```json
 {
   "mcpServers": {
     "worktree-guard": {
       "command": "node",
-      "args": ["/path/to/mcp-worktree-guard/dist/index.js"]
+      "args": ["/path/to/mcp-worktree-guard/dist/src/index.js"]
     }
   }
 }
+```
+
+### With Nix
+
+```bash
+nix run github:paolino/mcp-worktree-guard
 ```
 
 ## Tools
@@ -43,13 +71,14 @@ Configure in your MCP settings:
 
 ## Recommended Workflow
 
-1. Keep main repo always on `main` branch
-2. For each issue/feature, create a dedicated worktree:
+1. Keep main repo on `main` branch (never switch)
+2. For each issue, create a worktree:
    ```bash
-   git worktree add ../repo-issue-42 fix/some-bug
+   git worktree add ../repo-issue-42 -b fix/some-bug
    ```
 3. Work in the worktree directory
-4. When done, merge PR and remove worktree:
+4. Create PR and merge
+5. Clean up:
    ```bash
    git worktree remove ../repo-issue-42
    ```
