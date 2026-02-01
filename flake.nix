@@ -17,7 +17,7 @@
 
           src = ./.;
 
-          npmDepsHash = "sha256-qbP6+7cjrYh5sxAwbGZY0xOXUVBt8UNUmBFuHWBLHL0=";
+          npmDepsHash = "sha256-iHg4zcQ0xtdctg6fFchyj0aac3UD3ccP4Ml6E5xuw0E=";
 
           buildPhase = ''
             npm run build
@@ -50,7 +50,7 @@
 
           src = ./.;
 
-          npmDepsHash = "sha256-qbP6+7cjrYh5sxAwbGZY0xOXUVBt8UNUmBFuHWBLHL0=";
+          npmDepsHash = "sha256-iHg4zcQ0xtdctg6fFchyj0aac3UD3ccP4Ml6E5xuw0E=";
 
           buildPhase = ''
             npm run build
