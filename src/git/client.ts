@@ -1,6 +1,6 @@
 import { exec } from "node:child_process";
 import { stat, readFile } from "node:fs/promises";
-import { join, dirname, resolve } from "node:path";
+import { join, dirname, resolve, basename } from "node:path";
 import { promisify } from "node:util";
 import { GitError, NotARepoError, WorktreeError } from "./errors.js";
 import type { WorktreeEntry, WorktreeDetection } from "./types.js";
@@ -112,6 +112,30 @@ export async function getMainWorktreePath(path: string): Promise<string> {
     // dirname(worktrees) -> .git
     // dirname(.git) -> main-worktree
     return dirname(dirname(dirname(absoluteGitdir)));
+}
+
+/**
+ * If the repository uses the canonical bare + worktrees layout, return the
+ * container directory that holds the bare repo and its worktrees; otherwise
+ * return null.
+ *
+ * The layout is identified by a common git directory named `.bare`:
+ *   <container>/.bare       the bare repository
+ *   <container>/main        the primary worktree
+ *   <container>/<branch>    additional worktrees
+ */
+export async function bareLayoutContainer(
+    path: string
+): Promise<string | null> {
+    const root = await getRepoRoot(path);
+    const commonDir = await git(["rev-parse", "--git-common-dir"], root);
+    const absoluteCommonDir = resolve(root, commonDir);
+
+    if (basename(absoluteCommonDir) !== ".bare") {
+        return null;
+    }
+
+    return dirname(absoluteCommonDir);
 }
 
 /**
