@@ -3,7 +3,8 @@ import {
     createWorktree,
     branchExists,
     getRepoRoot,
-    listWorktrees
+    listWorktrees,
+    bareLayoutContainer
 } from "../git/client.js";
 import { basename, dirname, join } from "node:path";
 
@@ -17,7 +18,9 @@ export const createWorktreeSchema = z.object({
     worktreePath: z
         .string()
         .optional()
-        .describe("Path for the new worktree (defaults to sibling directory)"),
+        .describe(
+            "Path for the new worktree (default: beside the primary worktree in a bare+worktrees layout, else a sibling directory)"
+        ),
     issueNumber: z
         .number()
         .optional()
@@ -57,10 +60,19 @@ export async function handleCreateWorktree(
     // Determine worktree path
     let worktreePath = input.worktreePath;
     if (!worktreePath) {
-        const suffix = issueNumber
-            ? `issue-${issueNumber}`
-            : branchName.replace(/\//g, "-");
-        worktreePath = join(parentDir, `${repoName}-${suffix}`);
+        const flattenedBranch = branchName.replace(/\//g, "-");
+        const container = await bareLayoutContainer(repoRoot);
+        if (container) {
+            // Canonical bare + worktrees layout: place the worktree beside the
+            // primary worktree, inside the container, named after the branch.
+            worktreePath = join(container, flattenedBranch);
+        } else {
+            // Flat clone: keep the historical sibling-directory behavior.
+            const suffix = issueNumber
+                ? `issue-${issueNumber}`
+                : flattenedBranch;
+            worktreePath = join(parentDir, `${repoName}-${suffix}`);
+        }
     }
 
     // Check if worktree already exists at that path
